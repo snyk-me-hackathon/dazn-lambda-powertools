@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  snyk: snyk/snyk@1.7.0
+
 references:
   persist_to_workspace: &PERSIST_TO_WORKSPACE
     persist_to_workspace:
@@ -15,6 +19,7 @@ jobs:
     steps:
       - checkout
       - run: npm ci
+      - snyk/scan
       - *PERSIST_TO_WORKSPACE
   test-node12:
     docker:
@@ -30,7 +35,6 @@ jobs:
       - add_ssh_keys
       - run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
       - run: git status
-      # git complains if you don't set an email for some reason
       - run: git config --global user.email "dazn-bot@dazn.com"
       - run: git config --global user.name "DAZN Bot"
       - run: npm run new-version
@@ -57,7 +61,9 @@ jobs:
 workflows:
   main:
     jobs:
-      - build
+      - build:
+          context:
+            - snyk-security
       - test-node12:
           requires:
             - build
