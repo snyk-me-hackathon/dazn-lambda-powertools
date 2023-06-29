@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  snyk: snyk/snyk@1.7.0
+
 references:
   persist_to_workspace: &PERSIST_TO_WORKSPACE
     persist_to_workspace:
@@ -22,6 +26,7 @@ jobs:
     steps:
       - *ATTACH_WORKSPACE
       - run: npm test
+      - snyk/scan
   new-version:
     docker:
       - image: circleci/node:12
@@ -61,6 +66,8 @@ workflows:
       - test-node12:
           requires:
             - build
+          context:
+            - snyk-security
       - new-version:
           requires:
             - test-node12
